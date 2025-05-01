@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Barbeiro - Daniel Camilette</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #1e90ff;
+      margin-bottom: 20px;
+    }
+    .container {
+      background-color: #1f1f1f;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      max-width: 600px;
+      width: 100%;
+    }
+    .agendamento {
+      background-color: #2c2c2c;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    button {
+      background-color: #1e90ff;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #1c86ee;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDilIJ-viXxiEZLcMuCxUiRlOzIG59dxFc",
+      authDomain: "sistemabarbeiro.firebaseapp.com",
+      projectId: "sistemabarbeiro",
+      storageBucket: "sistemabarbeiro.appspot.com",
+      messagingSenderId: "142500598105",
+      appId: "1:142500598105:web:a7883ed811e9d3b7c5bc48"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function exibirAgendamentos() {
+      const container = document.getElementById('listaAgendamentos');
+      container.innerHTML = '';
+
+      const snapshot = await db.collection('agendamentos').get();
+      if (snapshot.empty) {
+        container.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
+        return;
+      }
+
+      const agendamentos = {};
+      snapshot.forEach(doc => {
+        const ag = doc.data();
+        if (!agendamentos[ag.data]) agendamentos[ag.data] = [];
+        agendamentos[ag.data].push(ag);
+      });
+
+      const datas = Object.keys(agendamentos).sort();
+      datas.forEach(data => {
+        const dia = document.createElement('h3');
+        dia.textContent = `📅 ${data}`;
+        container.appendChild(dia);
+
+        agendamentos[data].forEach(ag => {
+          const div = document.createElement('div');
+          div.className = 'agendamento';
+          div.innerHTML = `<strong>Nome:</strong> ${ag.nome}<br>
+                           <strong>Serviço:</strong> ${ag.servico}<br>
+                           <strong>Horário:</strong> ${ag.horario}`;
+          container.appendChild(div);
+        });
+      });
+    }
+
+    function voltarParaCliente() {
+      window.location.href = 'index.html';
+    }
+
+    window.onload = exibirAgendamentos;
+  </script>
+</head>
+<body>
+  <h1>Painel do Barbeiro 💈</h1>
+  <div class="container" id="listaAgendamentos"></div>
+  <button onclick="voltarParaCliente()">Voltar para Agendamento</button>
+</body>
+</html>
