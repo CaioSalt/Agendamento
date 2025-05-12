@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel do Barbeiro - Daniel Camilette</title>
   <style>
     body {
@@ -16,8 +16,16 @@
     }
     h1 {
       color: #1e90ff;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
+    .status-bar {
+      margin-bottom: 15px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+    .aberto { background-color: #006400; color: white; }
+    .fechado { background-color: #8b0000; color: white; }
     .container {
       background-color: #1f1f1f;
       padding: 20px;
@@ -31,6 +39,21 @@
       margin: 10px 0;
       padding: 10px;
       border-radius: 10px;
+      position: relative;
+    }
+    .btn-excluir {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #ff4c4c;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-excluir:hover {
+      background-color: #e04343;
     }
     button {
       background-color: #1e90ff;
@@ -59,6 +82,13 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    async function excluirAgendamento(id) {
+      if (confirm("Tem certeza que deseja excluir este agendamento?")) {
+        await db.collection('agendamentos').doc(id).delete();
+        exibirAgendamentos();
+      }
+    }
+
     async function exibirAgendamentos() {
       const container = document.getElementById('listaAgendamentos');
       container.innerHTML = '';
@@ -72,6 +102,7 @@
       const agendamentos = {};
       snapshot.forEach(doc => {
         const ag = doc.data();
+        ag.id = doc.id;
         if (!agendamentos[ag.data]) agendamentos[ag.data] = [];
         agendamentos[ag.data].push(ag);
       });
@@ -88,20 +119,55 @@
           div.innerHTML = `<strong>Nome:</strong> ${ag.nome}<br>
                            <strong>Serviço:</strong> ${ag.servico}<br>
                            <strong>Horário:</strong> ${ag.horario}`;
+          const btn = document.createElement('button');
+          btn.className = 'btn-excluir';
+          btn.textContent = '🗑️';
+          btn.onclick = () => excluirAgendamento(ag.id);
+          div.appendChild(btn);
           container.appendChild(div);
         });
       });
+    }
+
+    async function atualizarStatus() {
+      const ref = db.collection("config").doc("loja");
+      const doc = await ref.get();
+      const statusDiv = document.getElementById("statusText");
+      const btn = document.getElementById("btnToggle");
+
+      if (doc.exists && doc.data().disponivel === false) {
+        statusDiv.className = "status-bar fechado";
+        statusDiv.textContent = "🔴 Loja Fechada";
+        btn.textContent = "✅ Abrir Loja";
+      } else {
+        statusDiv.className = "status-bar aberto";
+        statusDiv.textContent = "🟢 Loja Aberta";
+        btn.textContent = "🔒 Fechar Loja";
+      }
+    }
+
+    async function alternarStatus() {
+      const ref = db.collection("config").doc("loja");
+      const doc = await ref.get();
+      const novo = !(doc.exists && doc.data().disponivel === true);
+      await ref.set({ disponivel: novo });
+      atualizarStatus();
     }
 
     function voltarParaCliente() {
       window.location.href = 'index.html';
     }
 
-    window.onload = exibirAgendamentos;
+    window.onload = () => {
+      exibirAgendamentos();
+      atualizarStatus();
+    };
   </script>
 </head>
 <body>
   <h1>Painel do Barbeiro 💈</h1>
+  <div id="statusText" class="status-bar">Verificando status...</div>
+  <button id="btnToggle" onclick="alternarStatus()">...</button>
   <div class="container" id="listaAgendamentos"></div>
   <button onclick="voltarParaCliente()">Voltar para Agendamento</button>
 </body>
