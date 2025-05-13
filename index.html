@@ -34,7 +34,7 @@
     const db = firebase.firestore();
 
     const horarios = [];
-    for (let h = 8; h <= 19; h++) {
+    for (let h = 8; h <= 17; h++) {
       if (h === 11 || h === 12) continue;
       [0, 30].forEach(m => {
         const hh = String(h).padStart(2, '0');
@@ -44,24 +44,38 @@
     }
 
     async function verificarStatus() {
-      const agora = new Date();
-      const hora = agora.getHours();
-      const minutos = agora.getMinutes();
-      const dentroHorario = (
-        (hora >= 8 && hora < 11) || (hora >= 13 && (hora < 19 || (hora === 19 && minutos <= 30)))
-      );
-      const statusRef = await db.collection("config").doc("loja").get();
-      const disponivel = statusRef.exists ? statusRef.data().disponivel : true;
-      const statusDiv = document.getElementById("status");
+  const agora = new Date();
+  const hora = agora.getHours();
+  const minutos = agora.getMinutes();
+  const dentroHorario = (
+    (hora >= 8 && hora < 11) || (hora >= 13 && hora < 18)
+  );
 
-      if (dentroHorario && disponivel) {
-        statusDiv.className = "status aberto";
-        statusDiv.textContent = "🟢 Loja Aberta Agora";
-      } else {
-        statusDiv.className = "status fechado";
-        statusDiv.textContent = "🔴 Loja Fechada no Momento";
-      }
+  let disponivel = true;
+  try {
+    const statusRef = await db.collection("config").doc("loja").get();
+    if (statusRef.exists) {
+      disponivel = statusRef.data().disponivel;
     }
+  } catch (error) {
+    console.error("Erro ao buscar status da loja:", error);
+    disponivel = false;
+  }
+
+  const statusDiv = document.getElementById("status");
+  const form = document.getElementById("form");
+
+  if (dentroHorario && disponivel) {
+    statusDiv.className = "status aberto";
+    statusDiv.textContent = "🟢 Loja Aberta Agora";
+    form.querySelectorAll("input, select, button").forEach(el => el.disabled = false);
+  } else {
+    statusDiv.className = "status fechado";
+    statusDiv.textContent = "🔴 Loja Fechada no Momento";
+    form.querySelectorAll("input, select, button").forEach(el => el.disabled = true);
+  }
+}
+
 
     async function horarioOcupado(data, horario) {
       const snapshot = await db.collection('agendamentos')
@@ -101,11 +115,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      atualizarHorarios();
-      verificarStatus();
-      const form = document.getElementById('form');
-      form.addEventListener('submit', salvarAgendamento);
-    });
+  verificarStatus();
+  atualizarHorarios();
+  const form = document.getElementById('form');
+  form.addEventListener('submit', salvarAgendamento);
+});
+
   </script>
 </head>
 <body>
