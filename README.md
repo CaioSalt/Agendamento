@@ -45,17 +45,20 @@ const CONFIG = {
 - `agendamentos/{data_horario}`: nome, telefone, serviço, data e horário. Só o barbeiro consegue ler.
 - `ocupados/{data_horario}`: só a data e o horário, sem dados pessoais. É público e serve para mostrar quais horários estão livres.
 - `config/loja`: `{ disponivel: true/false }`. É o botão de abrir/fechar a loja.
-- `barbeiros/{uid}`: lista de quem tem acesso ao painel.
 
 O ID de cada documento é a data mais o horário (ex.: `2026-11-28_14:30`). Por isso é impossível dois clientes reservarem o mesmo horário.
+
+## Quem tem acesso ao painel
+
+Só as contas cujo UID está na função `ehBarbeiro()` do `firestore.rules`. Para dar acesso a outra pessoa:
+1. Crie a conta em *Authentication* > *Users*.
+2. Copie o UID dela e adicione na lista.
+3. Publique as regras de novo.
 
 ## ⚠️ Passos obrigatórios no Firebase (uma vez só)
 
 1. **Publicar as regras de segurança.** Abra o [Console do Firebase](https://console.firebase.google.com/), entre em *Firestore Database* > *Regras*, cole o conteúdo de `firestore.rules` e clique em **Publicar**.
-2. **Cadastrar o barbeiro.**
-   - Em *Authentication* > *Users*, copie o **UID do usuário** do barbeiro.
-   - Em *Firestore Database*, crie a coleção `barbeiros` com um documento cujo **ID seja esse UID**. O documento pode ter qualquer campo, por exemplo `nome: "Daniel"`.
-3. **Bloquear cadastro de novas contas (recomendado).** Em *Authentication* > *Settings* > *User actions*, desmarque *Enable create (sign-up)*.
+2. **Bloquear cadastro de novas contas (recomendado).** Em *Authentication* > *Settings* > *User actions*, desmarque *Enable create (sign-up)*.
 
 > Agendamentos criados na versão antiga do site continuam aparecendo no painel. Porém, os horários deles não ficam bloqueados para novos clientes, porque não existem em `ocupados`.
 
