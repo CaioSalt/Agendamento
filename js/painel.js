@@ -32,7 +32,7 @@ function mostrarErro(erro) {
   }
   console.error(erro);
   box.textContent = erro.code === "permission-denied"
-    ? "Sua conta não tem permissão para ver os agendamentos. Veja no README como cadastrar o barbeiro no Firestore."
+    ? "Sua conta não tem permissão para ver os agendamentos. O UID desta conta precisa estar no firestore.rules (veja o README)."
     : "Erro ao carregar os dados. Verifique sua internet.";
   box.hidden = false;
 }
