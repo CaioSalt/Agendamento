@@ -1,0 +1,65 @@
+rules_version = '2';
+
+// Regras de segurança do Firestore.
+// Copie este conteúdo em: Console do Firebase > Firestore Database > Regras > Publicar.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Barbeiro = usuário logado que tem um documento em /barbeiros/{uid}.
+    // (Só estar logado não basta: qualquer pessoa poderia criar uma conta.)
+    function ehBarbeiro() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/barbeiros/$(request.auth.uid));
+    }
+
+    function dataValida(d) {
+      return d is string && d.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function horarioValido(h) {
+      return h is string && h.matches('^[0-9]{2}:[0-9]{2}$');
+    }
+
+    // Abrir/fechar a loja: todos leem, só o barbeiro altera.
+    match /config/{doc} {
+      allow read: if true;
+      allow write: if ehBarbeiro();
+    }
+
+    // Lista de barbeiros: cadastrada pelo console do Firebase.
+    match /barbeiros/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Horários ocupados: público (sem dados pessoais), usado para mostrar
+    // os horários livres. "create" falha se o documento já existir,
+    // então o mesmo horário nunca é reservado duas vezes.
+    match /ocupados/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['data', 'horario'])
+        && dataValida(request.resource.data.data)
+        && horarioValido(request.resource.data.horario)
+        && id == request.resource.data.data + '_' + request.resource.data.horario;
+      allow delete: if ehBarbeiro();
+    }
+
+    // Agendamentos (com nome e telefone): só o barbeiro lê.
+    // O cliente só pode criar, junto com o documento em /ocupados.
+    match /agendamentos/{id} {
+      allow read, update, delete: if ehBarbeiro();
+      allow create: if existsAfter(/databases/$(database)/documents/ocupados/$(id))
+        && request.resource.data.keys().hasOnly(['nome', 'telefone', 'servico', 'data', 'horario', 'criadoEm'])
+        && request.resource.data.nome is string
+        && request.resource.data.nome.size() >= 2
+        && request.resource.data.nome.size() <= 60
+        && request.resource.data.telefone is string
+        && request.resource.data.telefone.size() <= 11
+        && request.resource.data.servico is string
+        && request.resource.data.servico.size() <= 60
+        && id == request.resource.data.data + '_' + request.resource.data.horario
+        && request.resource.data.criadoEm == request.time;
+    }
+  }
+}

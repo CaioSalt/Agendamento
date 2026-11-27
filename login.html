@@ -3,86 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login do Barbeiro</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .login-container {
-      background-color: #1f1f1f;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      width: 100%;
-      max-width: 400px;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: none;
-      background-color: #2c2c2c;
-      color: #fff;
-      font-size: 16px;
-    }
-    button {
-      background-color: #1e90ff;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-      width: 100%;
-      font-size: 16px;
-    }
-    button:hover {
-      background-color: #1c86ee;
-    }
-  </style>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDilIJ-viXxiEZLcMuCxUiRlOzIG59dxFc",
-      authDomain: "sistemabarbeiro.firebaseapp.com",
-      projectId: "sistemabarbeiro",
-      storageBucket: "sistemabarbeiro.appspot.com",
-      messagingSenderId: "142500598105",
-      appId: "1:142500598105:web:a7883ed811e9d3b7c5bc48"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    function login() {
-      const email = document.getElementById('email').value;
-      const senha = document.getElementById('senha').value;
-      auth.signInWithEmailAndPassword(email, senha)
-        .then(() => {
-          window.location.href = 'barbeiro.html';
-        })
-        .catch(error => {
-          alert('Erro ao entrar: ' + error.message);
-        });
-    }
-  </script>
+  <title>Entrar · Barbearia Daniel Camilette</title>
+  <meta name="theme-color" content="#161618">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💈</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Kaushan+Script&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
-  <div class="login-container">
-    <h2>Área do Barbeiro 💈</h2>
-    <input type="email" id="email" placeholder="E-mail" />
-    <input type="password" id="senha" placeholder="Senha" />
-    <button onclick="login()">Entrar</button>
-  </div>
+  <main class="pagina">
+    <header class="marca">
+      <span class="poste" aria-hidden="true"><i></i></span>
+      <div class="marca-texto">
+        <span class="marca-script">Barbearia</span>
+        <span class="marca-desde">Desde <b>•</b> 1987</span>
+        <span class="marca-nome">Daniel Camilette</span>
+      </div>
+      <span class="poste" aria-hidden="true"><i></i></span>
+    </header>
+
+    <section class="cartao">
+      <h1 class="titulo">Área do barbeiro</h1>
+      <p class="subtitulo">Entre para ver e gerenciar os agendamentos.</p>
+
+      <form id="form" novalidate>
+        <div class="campo" style="margin-top: 20px">
+          <label for="email">E-mail</label>
+          <input class="entrada" type="email" id="email" autocomplete="username" required>
+        </div>
+        <div class="campo">
+          <label for="senha">Senha</label>
+          <input class="entrada" type="password" id="senha" autocomplete="current-password" required>
+        </div>
+
+        <p class="erro" id="erro" role="alert" hidden></p>
+        <p class="ok" id="ok" role="status" hidden></p>
+
+        <button class="botao" type="submit" id="btnEntrar">Entrar</button>
+      </form>
+
+      <p style="text-align: center; margin: 16px 0 0">
+        <button class="botao-link" type="button" id="btnEsqueci">Esqueci minha senha</button>
+      </p>
+    </section>
+
+    <footer class="rodape">
+      <a href="index.html">← Voltar para o agendamento</a>
+    </footer>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/comum.js"></script>
+  <script src="js/login.js"></script>
 </body>
 </html>

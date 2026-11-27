@@ -3,147 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agendamento - Barbearia Daniel Camilette</title>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #121212; color: #f0f0f0; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-    h1, h2 { text-align: center; }
-    h1 { color: #1e90ff; margin-bottom: 5px; }
-    .status { margin: 10px 0; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
-    .aberto { background-color: #006400; color: #fff; }
-    .fechado { background-color: #8b0000; color: #fff; }
-    form { background-color: #1f1f1f; padding: 20px; border-radius: 15px; box-shadow: 0 0 10px rgba(0,0,0,0.3); max-width: 400px; width: 100%; }
-    label { display: block; margin-top: 10px; color: #f0f0f0; }
-    input, select, button { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #444; background-color: #2c2c2c; color: #f0f0f0; }
-    button { background-color: #1e90ff; color: #fff; margin-top: 20px; cursor: pointer; }
-    button:hover { background-color: #1c86ee; }
-    .btn-container { display: flex; justify-content: center; width: 100%; max-width: 400px; }
-    .btn-container button { width: auto; padding: 10px 20px; }
-  </style>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDilIJ-viXxiEZLcMuCxUiRlOzIG59dxFc",
-      authDomain: "sistemabarbeiro.firebaseapp.com",
-      projectId: "sistemabarbeiro",
-      storageBucket: "sistemabarbeiro.appspot.com",
-      messagingSenderId: "142500598105",
-      appId: "1:142500598105:web:a7883ed811e9d3b7c5bc48"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    const horarios = [];
-    for (let h = 8; h <= 17; h++) {
-      if (h === 11 || h === 12) continue;
-      [0, 30].forEach(m => {
-        const hh = String(h).padStart(2, '0');
-        const mm = String(m).padStart(2, '0');
-        horarios.push(`${hh}:${mm}`);
-      });
-    }
-
-    async function verificarStatus() {
-  const agora = new Date();
-  const hora = agora.getHours();
-  const minutos = agora.getMinutes();
-  const dentroHorario = (
-    (hora >= 8 && hora < 11) || (hora >= 13 && hora < 18)
-  );
-
-  let disponivel = true;
-  try {
-    const statusRef = await db.collection("config").doc("loja").get();
-    if (statusRef.exists) {
-      disponivel = statusRef.data().disponivel;
-    }
-  } catch (error) {
-    console.error("Erro ao buscar status da loja:", error);
-    disponivel = false;
-  }
-
-  const statusDiv = document.getElementById("status");
-  const form = document.getElementById("form");
-
-  if (dentroHorario && disponivel) {
-    statusDiv.className = "status aberto";
-    statusDiv.textContent = "🟢 Loja Aberta Agora";
-    form.querySelectorAll("input, select, button").forEach(el => el.disabled = false);
-  } else {
-    statusDiv.className = "status fechado";
-    statusDiv.textContent = "🔴 Loja Fechada no Momento";
-    form.querySelectorAll("input, select, button").forEach(el => el.disabled = true);
-  }
-}
-
-
-    async function horarioOcupado(data, horario) {
-      const snapshot = await db.collection('agendamentos')
-        .where('data', '==', data)
-        .where('horario', '==', horario)
-        .get();
-      return !snapshot.empty;
-    }
-
-    async function atualizarHorarios() {
-      const dataSel = document.getElementById('data').value;
-      const selHora = document.getElementById('horario');
-      selHora.innerHTML = '';
-      for (const h of horarios) {
-        const ocupado = await horarioOcupado(dataSel, h);
-        const opt = document.createElement('option');
-        opt.value = h; opt.textContent = h;
-        if (ocupado) opt.disabled = true;
-        selHora.appendChild(opt);
-      }
-    }
-
-    function salvarAgendamento(e) {
-      e.preventDefault();
-      const nome = document.getElementById('nome').value;
-      const servico = document.getElementById('servico').value;
-      const data = document.getElementById('data').value;
-      const horario = document.getElementById('horario').value;
-      db.collection('agendamentos').add({ nome, servico, data, horario })
-        .then(() => alert('Agendamento confirmado!'))
-        .catch(err => console.error('Erro:', err));
-      document.getElementById('form').reset();
-    }
-
-    function irParaLogin() {
-      window.location.href = 'login.html';
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-  verificarStatus();
-  atualizarHorarios();
-  const form = document.getElementById('form');
-  form.addEventListener('submit', salvarAgendamento);
-});
-
-  </script>
+  <title>Agendamento · Barbearia Daniel Camilette</title>
+  <meta name="description" content="Agende seu horário na Barbearia Daniel Camilette, desde 1987.">
+  <meta name="theme-color" content="#161618">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💈</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Kaushan+Script&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
-  <h1>Barbearia Daniel Camilette 💈</h1>
-  <div id="status" class="status">Verificando status...</div>
-  <h2>Agende seu horário 💇‍♂️</h2>
-  <form id="form">
-    <label>Seu nome:</label>
-    <input type="text" id="nome" required>
-    <label>Serviço:</label>
-    <select id="servico" required>
-      <option value="Corte Masculino">Corte Masculino</option>
-      <option value="Corte Feminino">Corte Feminino</option>
-      <option value="Barba">Barba</option>
-    </select>
-    <label>Data:</label>
-    <input type="date" id="data" required onchange="atualizarHorarios()">
-    <label>Horário:</label>
-    <select id="horario" required></select>
-    <button type="submit">Confirmar</button>
-  </form>
-  <div class="btn-container">
-    <button onclick="irParaLogin()">Área do Barbeiro</button>
-  </div>
+  <main class="pagina">
+    <header class="marca">
+      <span class="poste" aria-hidden="true"><i></i></span>
+      <div class="marca-texto">
+        <span class="marca-script">Barbearia</span>
+        <span class="marca-desde">Desde <b>•</b> 1987</span>
+        <span class="marca-nome">Daniel Camilette</span>
+      </div>
+      <span class="poste" aria-hidden="true"><i></i></span>
+    </header>
+
+    <div id="status" class="selo" role="status">Verificando horário…</div>
+
+    <section class="cartao" id="secaoForm">
+      <h1 class="titulo">Agende seu horário</h1>
+      <p class="subtitulo">Leva menos de um minuto.</p>
+
+      <form id="form" novalidate>
+        <div class="passo" role="radiogroup" aria-labelledby="t-servico">
+          <h2 class="passo-titulo" id="t-servico"><span class="num">1</span>Serviço</h2>
+          <div class="opcoes" id="servicos"></div>
+        </div>
+
+        <div class="passo" role="radiogroup" aria-labelledby="t-dia">
+          <h2 class="passo-titulo" id="t-dia"><span class="num">2</span>Dia</h2>
+          <div class="dias" id="dias"></div>
+        </div>
+
+        <div class="passo" role="radiogroup" aria-labelledby="t-horario">
+          <h2 class="passo-titulo" id="t-horario"><span class="num">3</span>Horário</h2>
+          <div id="horarios"><p class="vazio">Escolha um dia para ver os horários livres.</p></div>
+        </div>
+
+        <div class="passo">
+          <h2 class="passo-titulo"><span class="num">4</span>Seus dados</h2>
+          <div class="campo">
+            <label for="nome">Nome</label>
+            <input class="entrada" type="text" id="nome" name="nome" maxlength="60" autocomplete="name" placeholder="Como podemos te chamar?" required>
+          </div>
+          <div class="campo">
+            <label for="telefone">WhatsApp <em>(opcional)</em></label>
+            <input class="entrada" type="tel" id="telefone" name="telefone" inputmode="numeric" autocomplete="tel" placeholder="(00) 00000-0000">
+          </div>
+        </div>
+
+        <div class="resumo" id="resumo" hidden></div>
+        <p class="erro" id="erro" role="alert" hidden></p>
+
+        <button class="botao" type="submit" id="btnConfirmar" disabled>Confirmar agendamento</button>
+      </form>
+    </section>
+
+    <section class="cartao sucesso" id="secaoSucesso" hidden tabindex="-1">
+      <div class="sucesso-icone" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h1 class="titulo">Horário confirmado!</h1>
+      <p class="subtitulo">Te esperamos na barbearia. 💈</p>
+      <ul class="detalhes" id="detalhes"></ul>
+      <button class="botao botao-secundario" type="button" id="btnNovo">Fazer outro agendamento</button>
+    </section>
+
+    <footer class="rodape">
+      <a href="login.html">Área do barbeiro</a>
+    </footer>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/comum.js"></script>
+  <script src="js/agendar.js"></script>
 </body>
 </html>
