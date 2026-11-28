@@ -12,7 +12,7 @@
 //   GOOGLE_APPLICATION_CREDENTIALS  caminho da chave do Firebase (JSON)
 // ==========================================================
 
-import makeWASocket, { DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthState } from "baileys";
+import makeWASocket, { Browsers, DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthState } from "baileys";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { readdir, rm } from "node:fs/promises";
@@ -86,7 +86,8 @@ async function conectarWhatsApp() {
     version,
     auth: state,
     logger: pino({ level: "error" }),
-    browser: ["Avisador Barbearia", "Chrome", "1.0"],
+    // A conexão por código só funciona com um navegador "real" (aparece como Chrome no Mac).
+    browser: Browsers.macOS("Chrome"),
     markOnlineOnConnect: false,
     syncFullHistory: false,
   });
