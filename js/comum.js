@@ -7,6 +7,10 @@ const CONFIG = {
   // Dias da semana sem atendimento (0 = domingo, 1 = segunda, ... 6 = sábado)
   diasFechados: [0],
 
+  // Dias sem agendamento, atendidos por ordem de chegada (6 = sábado).
+  // O cliente vê o dia na lista, mas com o aviso em vez dos horários.
+  diasOrdemDeChegada: [6],
+
   // Períodos de atendimento. "fim" é o horário em que fecha (não é agendável).
   periodos: [
     { nome: "Manhã", inicio: "08:00", fim: "11:00" },
@@ -160,7 +164,8 @@ function horaCurta(hhmm) {
 function textoFuncionamento() {
   const nomes = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
   const ordem = [1, 2, 3, 4, 5, 6, 0]; // semana começando na segunda
-  const abertos = ordem.filter((d) => !CONFIG.diasFechados.includes(d));
+  const chegada = CONFIG.diasOrdemDeChegada || [];
+  const abertos = ordem.filter((d) => !CONFIG.diasFechados.includes(d) && !chegada.includes(d));
 
   // Agrupa dias seguidos: [seg, ter, qua] -> "segunda a quarta"
   const grupos = [];
@@ -173,7 +178,18 @@ function textoFuncionamento() {
     .map((g) => (g.length > 2 ? `${nomes[g[0]]} a ${nomes[g.at(-1)]}` : g.map((d) => nomes[d]).join(", ")))
     .join(", ");
   const horas = CONFIG.periodos.map((p) => `${horaCurta(p.inicio)} às ${horaCurta(p.fim)}`).join(" e ");
-  return `${dias.charAt(0).toUpperCase()}${dias.slice(1)} · ${horas}`;
+  const linhas = [];
+  if (dias) linhas.push(`${dias.charAt(0).toUpperCase()}${dias.slice(1)} · ${horas}`);
+  ordem.filter((d) => chegada.includes(d) && !CONFIG.diasFechados.includes(d)).forEach((d) => {
+    const nome = nomes[d].charAt(0).toUpperCase() + nomes[d].slice(1);
+    linhas.push(`${nome} · ${horas}, por ordem de chegada`);
+  });
+  return linhas.join("\n");
+}
+
+// Dia atendido por ordem de chegada (sem agendamento)?
+function ehOrdemDeChegada(dataISO) {
+  return (CONFIG.diasOrdemDeChegada || []).includes(diaDaSemana(dataISO));
 }
 
 // ID do documento = data + horário. Assim o mesmo horário nunca é gravado duas vezes.

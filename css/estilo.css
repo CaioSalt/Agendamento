@@ -302,6 +302,20 @@ body {
 #servicos .preco { color: var(--texto-suave); font-size: 0.85rem; }
 #servicos input:checked + span .preco { color: rgba(255, 255, 255, 0.9); }
 
+/* Dia por ordem de chegada (ex.: sábado) */
+.dias .chip-chegada span { border-style: dashed; }
+.dias .chip-chegada small:last-child { color: var(--coral); }
+.dias .chip-chegada input:checked + span small:last-child { color: #fff; }
+.aviso-chegada {
+  padding: 16px 18px;
+  border: 1px solid rgba(239, 91, 59, 0.4);
+  border-radius: 12px;
+  background: var(--coral-suave);
+}
+.aviso-chegada strong { display: block; margin-bottom: 4px; font-family: var(--fonte-titulo); font-weight: 500; font-size: 1.1rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--coral-forte); }
+.aviso-chegada p { margin: 0; color: var(--texto); font-size: 0.95rem; }
+#txtHorario { white-space: pre-line; }
+
 /* ---------- Campos ---------- */
 
 .campo + .campo { margin-top: 14px; }
