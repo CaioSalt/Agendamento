@@ -19,7 +19,19 @@ const CONFIG = {
   // Quantos dias à frente o cliente pode escolher
   diasParaAgendar: 14,
 
-  servicos: ["Corte Masculino", "Corte Feminino", "Barba"],
+  // Serviços e preços. Use preco: null para não mostrar o preço.
+  servicos: [
+    { nome: "Corte Masculino", preco: null },
+    { nome: "Corte Feminino", preco: null },
+    { nome: "Barba", preco: null },
+  ],
+
+  // Informações da barbearia mostradas no site. Deixe "" para esconder.
+  barbearia: {
+    endereco: "",  // ex.: "Rua Exemplo, 123 - Centro, Cidade - ES"
+    whatsapp: "",  // só números com DDD, ex.: "28999999999"
+    instagram: "", // sem o @, ex.: "barbeariacamilette"
+  },
 };
 
 // ==========================================================
@@ -125,6 +137,42 @@ function formatarTelefone(texto) {
   if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
   if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+// 35 -> "R$ 35"   |   35.5 -> "R$ 35,50"
+function formatarPreco(valor) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: Number.isInteger(valor) ? 0 : 2,
+  }).format(valor);
+}
+
+// "08:00" -> "8h"   |   "13:30" -> "13h30"
+function horaCurta(hhmm) {
+  const [h, m] = hhmm.split(":").map(Number);
+  return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+}
+
+// Texto do horário de funcionamento a partir do CONFIG.
+// Ex.: "Segunda a sábado · 8h às 11h e 13h às 18h"
+function textoFuncionamento() {
+  const nomes = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+  const ordem = [1, 2, 3, 4, 5, 6, 0]; // semana começando na segunda
+  const abertos = ordem.filter((d) => !CONFIG.diasFechados.includes(d));
+
+  // Agrupa dias seguidos: [seg, ter, qua] -> "segunda a quarta"
+  const grupos = [];
+  abertos.forEach((d) => {
+    const ultimo = grupos.at(-1);
+    if (ultimo && ordem.indexOf(d) === ordem.indexOf(ultimo.at(-1)) + 1) ultimo.push(d);
+    else grupos.push([d]);
+  });
+  const dias = grupos
+    .map((g) => (g.length > 2 ? `${nomes[g[0]]} a ${nomes[g.at(-1)]}` : g.map((d) => nomes[d]).join(", ")))
+    .join(", ");
+  const horas = CONFIG.periodos.map((p) => `${horaCurta(p.inicio)} às ${horaCurta(p.fim)}`).join(" e ");
+  return `${dias.charAt(0).toUpperCase()}${dias.slice(1)} · ${horas}`;
 }
 
 // ID do documento = data + horário. Assim o mesmo horário nunca é gravado duas vezes.

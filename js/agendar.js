@@ -6,7 +6,8 @@ const marcado = (nome) => form.querySelector(`input[name="${nome}"]:checked`)?.v
 
 let lojaDisponivel = true;      // o barbeiro pode "fechar a loja" pelo painel
 let pararDeOuvirOcupados = null; // para cancelar o listener do dia anterior
-let ocupadosDoDia = new Set();
+let ocupadosDoDia = new Map(); // horário -> true se foi bloqueado pelo barbeiro
+let diasBloqueados = new Set(); // folgas marcadas pelo barbeiro no painel
 let diaCarregado = null;
 
 // ---------- Montagem da tela ----------
@@ -27,13 +28,18 @@ function criarChip(nome, valor, conteudo, desabilitado = false) {
 
 function montarServicos() {
   const box = $("servicos");
-  CONFIG.servicos.forEach((s) => box.append(criarChip("servico", s, s)));
+  CONFIG.servicos.forEach((s) => {
+    const conteudo = [el("b", null, s.nome)];
+    if (s.preco != null) conteudo.push(el("small", "preco", formatarPreco(s.preco)));
+    box.append(criarChip("servico", s.nome, conteudo));
+  });
 }
 
 function montarDias() {
   const { data: hoje, minutos } = agoraLocal();
   const ultimoHorario = paraMinutos(todosHorarios().at(-1));
   const box = $("dias");
+  const selecionado = marcado("dia");
   box.innerHTML = "";
 
   let dia = hoje;
@@ -46,12 +52,24 @@ function montarDias() {
     if (dia === hoje) rotulo = "Hoje";
     else if (dia === somarDias(hoje, 1)) rotulo = "Amanhã";
 
-    box.append(criarChip("dia", dia, [
+    const folga = diasBloqueados.has(dia);
+    const chip = criarChip("dia", dia, [
       el("small", null, rotulo),
       el("strong", null, formatarData(dia, { day: "2-digit" })),
-      el("small", null, formatarData(dia, { month: "short" }).replace(".", "")),
-    ]));
+      el("small", null, folga ? "folga" : formatarData(dia, { month: "short" }).replace(".", "")),
+    ], folga);
+    if (folga) chip.title = "Sem atendimento neste dia";
+    if (dia === selecionado && !folga) chip.querySelector("input").checked = true;
+    box.append(chip);
     adicionados++;
+  }
+
+  // Se o dia escolhido virou folga enquanto o cliente estava na página
+  if (selecionado && !marcado("dia")) {
+    if (pararDeOuvirOcupados) pararDeOuvirOcupados();
+    diaCarregado = null;
+    $("horarios").innerHTML = '<p class="vazio">Escolha um dia para ver os horários livres.</p>';
+    atualizarResumo();
   }
 }
 
@@ -66,7 +84,7 @@ function carregarHorarios(dia) {
     .where("data", "==", dia)
     .onSnapshot(
       (snap) => {
-        ocupadosDoDia = new Set(snap.docs.map((d) => d.data().horario));
+        ocupadosDoDia = new Map(snap.docs.map((d) => [d.data().horario, d.data().bloqueado === true]));
         montarHorarios();
       },
       (erro) => {
@@ -84,6 +102,7 @@ function montarHorarios() {
   const box = $("horarios");
   box.innerHTML = "";
   let livres = 0;
+  let bloqueados = 0;
 
   CONFIG.periodos.forEach((periodo) => {
     const grade = el("div", "grade");
@@ -91,8 +110,9 @@ function montarHorarios() {
       const passou = dia === hoje && paraMinutos(h) <= minutos;
       const ocupado = ocupadosDoDia.has(h) || passou;
       if (!ocupado) livres++;
+      if (ocupadosDoDia.get(h)) bloqueados++;
       const chip = criarChip("horario", h, h, ocupado);
-      if (ocupado) chip.title = passou ? "Horário já passou" : "Horário ocupado";
+      if (ocupado) chip.title = passou ? "Horário já passou" : "Horário indisponível";
       if (h === selecionado && !ocupado) chip.querySelector("input").checked = true;
       grade.append(chip);
     });
@@ -100,7 +120,10 @@ function montarHorarios() {
   });
 
   if (livres === 0) {
-    box.prepend(el("p", "vazio", "Este dia está lotado. Escolha outro dia."));
+    const semAtendimento = bloqueados === todosHorarios().length;
+    box.prepend(el("p", "vazio", semAtendimento
+      ? "Não haverá atendimento neste dia. Escolha outro dia."
+      : "Este dia está lotado. Escolha outro dia."));
   }
   atualizarResumo();
 }
@@ -129,7 +152,9 @@ function ouvirStatusDaLoja() {
     (doc) => {
       // Se o documento não existir, consideramos a loja disponível.
       lojaDisponivel = !(doc.exists && doc.data().disponivel === false);
+      diasBloqueados = new Set((doc.exists && doc.data().diasBloqueados) || []);
       atualizarStatus();
+      montarDias();
       atualizarResumo();
     },
     (erro) => {
@@ -254,6 +279,55 @@ function novoAgendamento() {
   atualizarResumo();
 }
 
+// ---------- Informações da barbearia ----------
+
+const ICONES = {
+  mapa: '<path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/>',
+  whatsapp: '<path d="M3.5 20.5 5 16a8.5 8.5 0 1 1 3 3Z"/><path d="M9 9.5c.3 1.6 1.9 3.9 4.4 5 .6.3 1.6-.2 1.9-.9l.2-.6-1.8-.9-.8.8c-.9-.3-2-1.3-2.4-2.3l.7-.8-.8-1.8-.6.1c-.6.2-1 .8-.8 1.4Z"/>',
+  instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".6" fill="currentColor"/>',
+};
+
+function botaoLink(texto, href, icone) {
+  const a = el("a", "botao botao-secundario botao-pequeno");
+  a.href = href;
+  a.target = "_blank";
+  a.rel = "noopener";
+  a.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONES[icone]}</svg>`;
+  a.append(texto);
+  return a;
+}
+
+function montarInfo() {
+  const info = CONFIG.barbearia;
+
+  const lista = $("listaPrecos");
+  CONFIG.servicos.forEach((s) => {
+    const li = el("li");
+    li.append(el("span", null, s.nome));
+    if (s.preco != null) li.append(el("strong", null, formatarPreco(s.preco)));
+    lista.append(li);
+  });
+
+  $("txtHorario").textContent = textoFuncionamento();
+
+  if (info.endereco) {
+    $("txtEndereco").textContent = info.endereco;
+    $("blocoEndereco").hidden = false;
+  }
+
+  const acoes = $("infoAcoes");
+  if (info.endereco) {
+    acoes.append(botaoLink("Como chegar", `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(info.endereco)}`, "mapa"));
+  }
+  if (info.whatsapp) {
+    acoes.append(botaoLink("WhatsApp", `https://wa.me/55${apenasDigitos(info.whatsapp)}`, "whatsapp"));
+  }
+  if (info.instagram) {
+    acoes.append(botaoLink("Instagram", `https://instagram.com/${info.instagram.replace("@", "")}`, "instagram"));
+  }
+  acoes.hidden = acoes.children.length === 0;
+}
+
 // ---------- Início ----------
 
 form.addEventListener("change", (e) => {
@@ -270,6 +344,7 @@ $("btnNovo").addEventListener("click", novoAgendamento);
 
 montarServicos();
 montarDias();
+montarInfo();
 atualizarStatus();
 ouvirStatusDaLoja();
 
