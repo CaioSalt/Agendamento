@@ -44,10 +44,32 @@
       <div class="abas" role="tablist">
         <button class="aba" role="tab" aria-selected="true" data-aba="proximos" type="button">Próximos</button>
         <button class="aba" role="tab" aria-selected="false" data-aba="historico" type="button">Histórico</button>
+        <button class="aba" role="tab" aria-selected="false" data-aba="folgas" type="button">Folgas</button>
       </div>
 
       <p class="erro" id="erro" role="alert" hidden></p>
       <div id="lista" role="tabpanel"></div>
+
+      <div id="folgas" role="tabpanel" hidden>
+        <section class="cartao folga-editor">
+          <h2 class="passo-titulo">Bloquear dia ou horário</h2>
+          <p class="dica">Escolha o dia e toque nos horários para bloquear ou liberar. Os clientes não conseguem agendar em horários bloqueados.</p>
+          <div class="campo">
+            <label for="diaBloqueio">Dia</label>
+            <input class="entrada" type="date" id="diaBloqueio">
+          </div>
+          <div id="gradeBloqueio"></div>
+          <div class="legenda" id="legenda" hidden>
+            <span><i class="cor livre"></i>Livre</span>
+            <span><i class="cor bloqueado"></i>Bloqueado</span>
+            <span><i class="cor agendado"></i>Cliente agendado</span>
+          </div>
+          <button class="botao botao-secundario" type="button" id="btnDiaInteiro" hidden>Bloquear o dia inteiro</button>
+        </section>
+
+        <h2 class="dia-titulo"><span>Bloqueios marcados</span></h2>
+        <div id="listaBloqueios"></div>
+      </div>
     </div>
 
     <footer class="rodape">

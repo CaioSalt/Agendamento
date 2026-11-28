@@ -28,15 +28,32 @@ service cloud.firestore {
       allow write: if ehBarbeiro();
     }
 
+    // Folgas de dia inteiro marcadas pelo barbeiro (config/loja.diasBloqueados).
+    function diaBloqueado(d) {
+      let loja = /databases/$(database)/documents/config/loja;
+      return exists(loja) && d in get(loja).data.get('diasBloqueados', []);
+    }
+
     // Horários ocupados: público (sem dados pessoais), usado para mostrar
     // os horários livres. "create" falha se o documento já existir,
     // então o mesmo horário nunca é reservado duas vezes.
+    // O barbeiro também cria documentos aqui com bloqueado: true para
+    // bloquear horários específicos (folga, compromisso...).
     match /ocupados/{id} {
       allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['data', 'horario'])
-        && dataValida(request.resource.data.data)
+      allow create: if dataValida(request.resource.data.data)
         && horarioValido(request.resource.data.horario)
-        && id == request.resource.data.data + '_' + request.resource.data.horario;
+        && id == request.resource.data.data + '_' + request.resource.data.horario
+        && (
+          // cliente agendando (não pode ser num dia de folga)
+          (request.resource.data.keys().hasOnly(['data', 'horario'])
+            && !diaBloqueado(request.resource.data.data))
+          ||
+          // barbeiro bloqueando um horário
+          (ehBarbeiro()
+            && request.resource.data.keys().hasOnly(['data', 'horario', 'bloqueado'])
+            && request.resource.data.bloqueado == true)
+        );
       allow delete: if ehBarbeiro();
     }
 

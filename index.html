@@ -6,6 +6,20 @@
   <title>Agendamento · Barbearia Daniel Camilette</title>
   <meta name="description" content="Agende seu horário na Barbearia Daniel Camilette, desde 1987.">
   <meta name="theme-color" content="#161618">
+
+  <!-- Prévia ao compartilhar o link (WhatsApp, Instagram, Facebook...).
+       Se o endereço do site mudar (domínio próprio), atualize og:url e og:image. -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="Barbearia Daniel Camilette">
+  <meta property="og:title" content="Barbearia Daniel Camilette · Agende seu horário">
+  <meta property="og:description" content="Desde 1987. Escolha o serviço, o dia e o horário em menos de um minuto.">
+  <meta property="og:url" content="https://caiosalt.github.io/Agendamento/">
+  <meta property="og:image" content="https://caiosalt.github.io/Agendamento/img/compartilhar.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Logo da Barbearia Daniel Camilette, desde 1987">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💈</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,6 +87,27 @@
       <p class="subtitulo">Te esperamos na barbearia. 💈</p>
       <ul class="detalhes" id="detalhes"></ul>
       <button class="botao botao-secundario" type="button" id="btnNovo">Fazer outro agendamento</button>
+    </section>
+
+    <section class="cartao info" aria-labelledby="t-info">
+      <h2 class="titulo" id="t-info">A barbearia</h2>
+
+      <div class="info-bloco">
+        <h3 class="info-titulo">Serviços</h3>
+        <ul class="precos" id="listaPrecos"></ul>
+      </div>
+
+      <div class="info-bloco">
+        <h3 class="info-titulo">Horário de funcionamento</h3>
+        <p id="txtHorario"></p>
+      </div>
+
+      <div class="info-bloco" id="blocoEndereco" hidden>
+        <h3 class="info-titulo">Endereço</h3>
+        <p id="txtEndereco"></p>
+      </div>
+
+      <div class="info-acoes" id="infoAcoes" hidden></div>
     </section>
 
     <footer class="rodape">

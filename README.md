@@ -36,15 +36,38 @@ const CONFIG = {
   ],
   intervalo: 30,                  // minutos por horário
   diasParaAgendar: 14,
-  servicos: ["Corte Masculino", "Corte Feminino", "Barba"],
+  servicos: [
+    { nome: "Corte Masculino", preco: 35 },  // preco: null esconde o preço
+    { nome: "Barba", preco: 25 },
+  ],
+  barbearia: {
+    endereco: "Rua Exemplo, 123 - Centro, Cidade - ES",  // "" esconde
+    whatsapp: "28999999999",
+    instagram: "barbeariacamilette",                      // sem o @
+  },
 };
 ```
+
+O horário de funcionamento mostrado no site é montado sozinho a partir de `diasFechados` e `periodos`.
+
+## Folgas e bloqueios
+
+Na aba **Folgas** do painel, o barbeiro escolhe um dia e:
+- toca em horários para bloquear ou liberar (consulta, compromisso…);
+- ou bloqueia o dia inteiro (feriado, viagem…).
+
+Os clientes não conseguem agendar nesses horários. As regras do Firestore também impedem isso, mesmo que alguém tente burlar a página.
+
+## Prévia ao compartilhar o link
+
+As tags `og:` no `<head>` do `index.html` fazem aparecer um cartão com a imagem `img/compartilhar.jpg` quando alguém manda o link no WhatsApp ou nas redes. **Se o endereço do site mudar (domínio próprio), atualize `og:url` e `og:image`.**
 
 ## Como o banco de dados está organizado (Firestore)
 
 - `agendamentos/{data_horario}`: nome, telefone, serviço, data e horário. Só o barbeiro consegue ler.
 - `ocupados/{data_horario}`: só a data e o horário, sem dados pessoais. É público e serve para mostrar quais horários estão livres.
-- `config/loja`: `{ disponivel: true/false }`. É o botão de abrir/fechar a loja.
+- `config/loja`: `{ disponivel, diasBloqueados }`. É o botão de abrir/fechar a loja e a lista de folgas de dia inteiro.
+- Em `ocupados`, os documentos com `bloqueado: true` são horários bloqueados pelo barbeiro.
 
 O ID de cada documento é a data mais o horário (ex.: `2026-11-28_14:30`). Por isso é impossível dois clientes reservarem o mesmo horário.
 

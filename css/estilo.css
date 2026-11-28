@@ -296,6 +296,12 @@ body {
 .dias strong { font-family: var(--fonte-titulo); font-size: 1.5rem; line-height: 1.1; }
 .dias input:checked + span small { color: rgba(255, 255, 255, 0.85); }
 
+/* Serviço com preço dentro do chip */
+#servicos .chip span { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+#servicos .chip b { font-weight: 500; }
+#servicos .preco { color: var(--texto-suave); font-size: 0.85rem; }
+#servicos input:checked + span .preco { color: rgba(255, 255, 255, 0.9); }
+
 /* ---------- Campos ---------- */
 
 .campo + .campo { margin-top: 14px; }
@@ -444,6 +450,29 @@ body {
 .detalhes span { color: var(--texto-suave); }
 .detalhes strong { text-align: right; overflow-wrap: anywhere; }
 
+/* ---------- Seção "A barbearia" ---------- */
+
+.info { margin-top: 16px; }
+.info .titulo { margin-bottom: 18px; }
+.info-bloco + .info-bloco { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--borda); }
+.info-titulo {
+  margin: 0 0 8px;
+  color: var(--coral);
+  font-family: var(--fonte-titulo);
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.info p { margin: 0; }
+.precos { margin: 0; padding: 0; list-style: none; }
+.precos li { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; }
+.precos li::after { content: ""; order: 1; flex: 1; border-bottom: 1px dotted var(--borda); }
+.precos li strong { order: 2; font-family: var(--fonte-titulo); font-weight: 500; font-size: 1.05rem; }
+.precos li:not(:has(strong))::after { display: none; }
+.info-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.info-acoes .botao { flex: 1 1 140px; }
+
 /* ---------- Painel do barbeiro ---------- */
 
 .topo {
@@ -525,3 +554,39 @@ body {
 .ag-info .whats:hover { text-decoration: underline; }
 
 .carregando-tela { padding: 80px 0; color: var(--texto-suave); text-align: center; }
+
+/* ---------- Painel: folgas e bloqueios ---------- */
+
+.folga-editor { margin-top: 12px; }
+.folga-editor .passo-titulo { margin-bottom: 6px; }
+.dica { margin: 0 0 16px; color: var(--texto-suave); font-size: 0.92rem; }
+#gradeBloqueio { margin-top: 18px; }
+
+.slot {
+  padding: 12px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--superficie-2);
+  color: var(--texto);
+  font: 500 1rem var(--fonte-texto);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.slot.livre:hover { border-color: var(--coral); }
+.slot.bloqueado {
+  border-color: var(--coral);
+  background: repeating-linear-gradient(-45deg, var(--coral-suave) 0 6px, transparent 6px 12px);
+  color: var(--coral-forte);
+  text-decoration: line-through;
+}
+.slot.agendado { border-color: rgba(76,195,138,.4); background: var(--verde-suave); color: var(--verde); cursor: not-allowed; }
+.slot:disabled { opacity: 0.85; }
+.slot:focus-visible { outline: 2px solid var(--coral-forte); outline-offset: 2px; }
+
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 16px; color: var(--texto-suave); font-size: 0.85rem; }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda .cor { width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--borda); background: var(--superficie-2); }
+.legenda .cor.bloqueado { border-color: var(--coral); background: var(--coral-suave); }
+.legenda .cor.agendado { border-color: rgba(76,195,138,.4); background: var(--verde-suave); }
+
+.bloqueio .ag-info strong::first-letter { text-transform: uppercase; }
