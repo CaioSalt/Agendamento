@@ -1,0 +1,24 @@
+[Unit]
+Description=Avisador de agendamentos no WhatsApp - Barbearia Daniel Camilette
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=avisador
+Group=avisador
+WorkingDirectory=/opt/avisador/app/avisador
+EnvironmentFile=/opt/avisador/config.env
+ExecStart=/usr/bin/node index.js
+Restart=always
+RestartSec=10
+
+# Proteções: o avisador só consegue escrever na pasta da sessão do WhatsApp
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/avisador/sessao
+
+[Install]
+WantedBy=multi-user.target
