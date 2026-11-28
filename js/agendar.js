@@ -53,12 +53,18 @@ function montarDias() {
     else if (dia === somarDias(hoje, 1)) rotulo = "Amanhã";
 
     const folga = diasBloqueados.has(dia);
+    const chegada = !folga && ehOrdemDeChegada(dia);
+    const rodape = folga ? "folga" : chegada ? "chegada" : formatarData(dia, { month: "short" }).replace(".", "");
     const chip = criarChip("dia", dia, [
       el("small", null, rotulo),
       el("strong", null, formatarData(dia, { day: "2-digit" })),
-      el("small", null, folga ? "folga" : formatarData(dia, { month: "short" }).replace(".", "")),
+      el("small", null, rodape),
     ], folga);
     if (folga) chip.title = "Sem atendimento neste dia";
+    if (chegada) {
+      chip.classList.add("chip-chegada");
+      chip.title = "Atendimento por ordem de chegada";
+    }
     if (dia === selecionado && !folga) chip.querySelector("input").checked = true;
     box.append(chip);
     adicionados++;
@@ -77,7 +83,14 @@ function montarDias() {
 // Se outra pessoa agendar enquanto o cliente está na página, o horário some na hora.
 function carregarHorarios(dia) {
   if (pararDeOuvirOcupados) pararDeOuvirOcupados();
+  pararDeOuvirOcupados = null;
   diaCarregado = dia;
+
+  if (ehOrdemDeChegada(dia)) {
+    mostrarOrdemDeChegada(dia);
+    return;
+  }
+
   $("horarios").innerHTML = '<p class="vazio">Carregando horários…</p>';
 
   pararDeOuvirOcupados = db.collection("ocupados")
@@ -94,9 +107,24 @@ function carregarHorarios(dia) {
     );
 }
 
+// Dia sem agendamento: mostra o aviso no lugar dos horários.
+function mostrarOrdemDeChegada(dia) {
+  const horas = CONFIG.periodos.map((p) => `das ${horaCurta(p.inicio)} às ${horaCurta(p.fim)}`).join(" ou ");
+  const nome = formatarData(dia, { weekday: "long" });
+  const box = $("horarios");
+  box.innerHTML = "";
+  const aviso = el("div", "aviso-chegada");
+  aviso.append(
+    el("strong", null, `${nome.charAt(0).toUpperCase()}${nome.slice(1)} é por ordem de chegada`),
+    el("p", null, `Não precisa agendar: é só vir ${horas}. Atendemos na ordem em que os clientes chegarem. 💈`)
+  );
+  box.append(aviso);
+  atualizarResumo();
+}
+
 function montarHorarios() {
   const dia = diaCarregado;
-  if (!dia) return;
+  if (!dia || ehOrdemDeChegada(dia)) return;
   const { data: hoje, minutos } = agoraLocal();
   const selecionado = marcado("horario");
   const box = $("horarios");
@@ -180,6 +208,7 @@ function problemaNoFormulario(d) {
   if (!lojaDisponivel) return "Os agendamentos estão pausados no momento.";
   if (!d.servico) return "Escolha um serviço.";
   if (!d.data) return "Escolha um dia.";
+  if (ehOrdemDeChegada(d.data)) return "Neste dia o atendimento é por ordem de chegada, sem agendamento.";
   if (!d.horario) return "Escolha um horário.";
   if (d.nome.length < 2) return "Digite seu nome.";
   if (d.telefone && (d.telefone.length < 10 || d.telefone.length > 11)) return "WhatsApp inválido. Use DDD + número.";

@@ -215,6 +215,11 @@ function montarGradeBloqueio() {
   botaoDia.textContent = diaInteiro ? "Liberar o dia inteiro" : "Bloquear o dia inteiro";
   botaoDia.disabled = fechadoNaSemana;
 
+  const chegada = ehOrdemDeChegada(dia);
+  if (chegada && !diaInteiro) {
+    box.append(el("p", "vazio", "Neste dia o atendimento é por ordem de chegada, então não há horários para bloquear. Se a barbearia não for abrir, use “Bloquear o dia inteiro”."));
+    return;
+  }
   if (fechadoNaSemana) {
     box.append(el("p", "vazio", "A barbearia já não abre neste dia da semana."));
     return;
