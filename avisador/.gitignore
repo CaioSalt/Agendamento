@@ -1,0 +1,5 @@
+node_modules/
+sessao/
+config.env
+*.json.key
+chave-firebase.json

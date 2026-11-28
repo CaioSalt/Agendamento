@@ -1,0 +1,15 @@
+{
+  "name": "avisador-barbearia",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Avisa o barbeiro no WhatsApp quando entra um agendamento novo",
+  "type": "module",
+  "main": "index.js",
+  "engines": { "node": ">=20" },
+  "scripts": { "start": "node index.js" },
+  "dependencies": {
+    "baileys": "7.0.0-rc14",
+    "firebase-admin": "14.5.1",
+    "pino": "10.4.0"
+  }
+}
