@@ -316,9 +316,10 @@ function montarInfo() {
   }
 
   const acoes = $("infoAcoes");
-  if (info.endereco) {
-    acoes.append(botaoLink("Como chegar", `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(info.endereco)}`, "mapa"));
-  }
+  // "Como chegar": usa o link do Maps; se não tiver, pesquisa o endereço no Maps.
+  const linkMapa = info.mapa
+    || (info.endereco && `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(info.endereco)}`);
+  if (linkMapa) acoes.append(botaoLink("Como chegar", linkMapa, "mapa"));
   if (info.whatsapp) {
     acoes.append(botaoLink("WhatsApp", `https://wa.me/55${apenasDigitos(info.whatsapp)}`, "whatsapp"));
   }
