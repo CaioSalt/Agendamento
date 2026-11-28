@@ -28,9 +28,10 @@ const CONFIG = {
 
   // Informações da barbearia mostradas no site. Deixe "" para esconder.
   barbearia: {
-    endereco: "",  // ex.: "Rua Exemplo, 123 - Centro, Cidade - ES"
+    endereco: "",  // texto do endereço, ex.: "Rua Exemplo, 123 - Centro, Cidade - ES"
+    mapa: "https://maps.app.goo.gl/BNfhs6ruftYW9U526", // link do Google Maps (botão "Como chegar")
     whatsapp: "",  // só números com DDD, ex.: "28999999999"
-    instagram: "", // sem o @, ex.: "barbeariacamilette"
+    instagram: "danielcamilette", // sem o @
   },
 };
 

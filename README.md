@@ -42,6 +42,7 @@ const CONFIG = {
   ],
   barbearia: {
     endereco: "Rua Exemplo, 123 - Centro, Cidade - ES",  // "" esconde
+    mapa: "https://maps.app.goo.gl/...",                  // link do botão "Como chegar"
     whatsapp: "28999999999",
     instagram: "barbeariacamilette",                      // sem o @
   },
