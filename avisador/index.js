@@ -15,7 +15,8 @@
 import makeWASocket, { DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthState } from "baileys";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
-import { rm } from "node:fs/promises";
+import { readdir, rm } from "node:fs/promises";
+import { join } from "node:path";
 import pino from "pino";
 import { montarMensagem } from "./mensagem.js";
 
@@ -128,13 +129,24 @@ async function conectarWhatsApp() {
         // O aparelho foi desconectado pelo celular: apaga a sessão e espera.
         log("O WhatsApp foi DESCONECTADO pelo celular.");
         log("Para conectar de novo, rode:  systemctl restart avisador");
-        await rm(PASTA_SESSAO, { recursive: true, force: true });
+        await limparSessao();
         return;
       }
       log(`Conexão caiu (código ${codigo ?? "?"}). Reconectando em 5 segundos…`);
       setTimeout(() => conectarWhatsApp().catch(falhaGrave), 5000);
     }
   });
+}
+
+// Apaga o login salvo (o conteúdo da pasta, não a pasta em si: o serviço
+// só tem permissão de escrever DENTRO dela).
+async function limparSessao() {
+  try {
+    const arquivos = await readdir(PASTA_SESSAO);
+    await Promise.all(arquivos.map((a) => rm(join(PASTA_SESSAO, a), { recursive: true, force: true })));
+  } catch (erro) {
+    log("ERRO ao limpar a sessão:", erro.message);
+  }
 }
 
 // O WhatsApp de alguns números brasileiros não usa o 9º dígito,
@@ -188,6 +200,9 @@ function falhaGrave(erro) {
   log("ERRO grave:", erro?.stack || erro);
   process.exit(1); // o systemd reinicia o avisador
 }
+
+// Qualquer erro inesperado: registra no log e sai (o systemd reinicia).
+process.on("unhandledRejection", falhaGrave);
 
 // Se algo falhou, tenta de novo a cada minuto.
 setInterval(processarPendentes, 60 * 1000);
